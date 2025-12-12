@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia do Paciente LCA - Clínica PACE</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; max-height: 0; }
+      to { opacity: 1; max-height: 1000px; }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    .animate-slideDown {
+      animation: slideDown 0.4s ease-in-out forwards;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Ícones SVG
+    const Activity = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    );
+
+    const CheckCircle = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
+
+    const ChevronDown = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    );
+
+    const ChevronUp = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+      </svg>
+    );
+
+    const Clock = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
+
+    const Info = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
+
+    const TrendingUp = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+    );
+
+    const Award = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+      </svg>
+    );
+
+    const AlertCircle = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
+
+    const BarChart2 = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    );
+
+    const Smile = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
+
+    const Zap = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    );
+
+    const Shield = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    );
+
+    const RLCAPatientGuide = () => {
+      const [activeTab, setActiveTab] = useState('phases');
+      const [selectedPhase, setSelectedPhase] = useState(null);
+      const [showIntro, setShowIntro] = useState(true);
+      const [expandedSection, setExpandedSection] = useState(null);
+
+      const theme = {
+        primary: 'bg-teal-600',
+        primaryHover: 'hover:bg-teal-700',
+        secondary: 'bg-teal-500',
+        light: 'bg-teal-50',
+        text: 'text-teal-900',
+        accent: 'text-teal-600',
+        border: 'border-teal-200'
+      };
+
+      const graftSpecifics = [
+        { time: '6 semanas', action: 'Começar a forçar levemente a dobra do joelho (Isometria)', icon: <Clock size={16} /> },
+        { time: '8 semanas', action: 'Exercícios de dobrar e esticar com movimento', icon: <Activity size={16} /> },
+        { time: '12 semanas', action: 'Músculos de trás da coxa liberados!', icon: <CheckCircle size={16} /> },
+        { time: '16 semanas', action: 'Início dos saltos (Pliometria)', icon: <Zap size={16} /> },
+      ];
+
+      const benefits = [
+        "Recupera seu movimento mais rápido",
+        "Volta aos esportes com segurança",
+        "Deixa sua coxa mais forte desde o início",
+        "Garante um resultado melhor a longo prazo"
+      ];
+
+      const phases = [
+        {
+          id: 1,
+          title: "1. Primeiros Cuidados",
+          duration: "0 - 3 Semanas",
+          icon: <Shield />,
+          description: "Seu foco agora é desinchar o joelho e 'acordar' o músculo da coxa. Proteja sua cirurgia!",
+          goals: [
+            { label: "Movimento", value: "Tentar esticar tudo e dobrar até 90º" },
+            { label: "Força", value: "Conseguir contrair a coxa sozinho" },
+            { label: "Inchaço", value: "Controlar (Gelo e Repouso)" },
+            { label: "Andar", value: "Pisar com o pé todo (use muletas se precisar)" },
+            { label: "Dor", value: "Diminuindo a cada dia" }
+          ],
+          toDos: [
+            "Exercícios de esticar a perna sentado (90º a 60º)",
+            "Contrair a coxa sem mover a perna (Isometria)",
+            "Usar o 'choquinho' (Eletroestimulação) na fisio",
+            "Fazer exercícios 2 a 6 vezes por semana"
+          ]
+        },
+        {
+          id: 2,
+          title: "2. Voltando a Caminhar",
+          duration: "4 - 6 Semanas",
+          icon: <Activity />,
+          description: "Hora de largar as muletas e andar o mais natural possível.",
+          goals: [
+            { label: "Movimento", value: "Dobrar quase igual à outra perna" },
+            { label: "Força", value: "Coxa recuperando 60% da força" },
+            { label: "Inchaço", value: "Quase nada ou muito pouco" },
+            { label: "Andar", value: "Normal, sem mancar e sem muletas" },
+            { label: "Dor", value: "Nenhuma ou muito leve" }
+          ],
+          toDos: [
+            "Exercícios de esticar a perna (cadeia aberta)",
+            "Fortalecimento com caneleira ou elástico",
+            "1 a 2 séries de 10 repetições",
+            "Frequência: 2 a 5 vezes por semana"
+          ]
+        },
+        {
+          id: 3,
+          title: "3. Ganhando Força",
+          duration: "7 - 9 Semanas",
+          icon: <TrendingUp />,
+          description: "Vida normal! Foco total em deixar a perna operada tão forte quanto a outra.",
+          goals: [
+            { label: "Movimento", value: "Igual à perna saudável" },
+            { label: "Força", value: "Coxa com 70% da força da outra" },
+            { label: "Inchaço", value: "Mínimo após esforço" },
+            { label: "Dia a dia", value: "Caminhar e subir escadas normalmente" },
+            { label: "Dor", value: "Zero" }
+          ],
+          toDos: [
+            "Aumentar o peso nos exercícios",
+            "Exercícios com elásticos ou máquinas",
+            "3 a 4 séries de 10 repetições",
+            "Ir à fisio/academia 3 a 4 vezes na semana"
+          ]
+        },
+        {
+          id: 4,
+          title: "4. Preparando a Corrida",
+          duration: "10 - 16 Semanas",
+          icon: <Zap />,
+          description: "Se tudo estiver bem, começamos a pensar em trotar e correr.",
+          goals: [
+            { label: "Força", value: "Coxa com 75-80% da força total" },
+            { label: "Confiança", value: "Sentindo-se seguro nas tarefas diárias" },
+            { label: "Transição", value: "Bicicleta, caminhada rápida e trote" },
+            { label: "Sintomas", value: "Sem dor ou inchaço após treinar" }
+          ],
+          toDos: [
+            "Treino de condicionamento físico mais intenso",
+            "Fortalecimento contínuo",
+            "Início de trote/corrida (só com liberação!)"
+          ]
+        },
+        {
+          id: 5,
+          title: "5. Saltos e Agilidade",
+          duration: "4 - 6 Meses",
+          icon: <Award />,
+          description: "Fase de atleta! Aprender a saltar, aterrissar e mudar de direção.",
+          goals: [
+            { label: "Força", value: "Quase igual à outra perna (85%)" },
+            { label: "Testes", value: "Passar nos testes de salto da fisio" },
+            { label: "Atividades", value: "Saltos, agilidade, piques de corrida" }
+          ],
+          toDos: [
+            "Treinos de salto e aterrissagem",
+            "Mudanças de direção e giros",
+            "Musculação pesada",
+            "4 a 6 séries nos exercícios"
+          ]
+        },
+        {
+          id: 6,
+          title: "6. De Volta ao Jogo",
+          duration: "> 9 Meses",
+          icon: <Smile />,
+          description: "O grande objetivo. Retorno seguro e com confiança total.",
+          goals: [
+            { label: "Força", value: "Simetria total (90-100%)" },
+            { label: "Testes", value: "Excelente nos testes de salto" },
+            { label: "Confiança", value: "Sem medo de jogar (Questionários OK)" },
+            { label: "Final", value: "Alta do médico e do fisio" }
+          ],
+          toDos: [
+            "Manutenção da força na academia",
+            "Prevenção (para não machucar de novo)",
+            "Treino específico do seu esporte"
+          ]
+        }
+      ];
+
+      const returnTimeline = [
+        { month: 5.5, activity: "Agachamento Fundo" },
+        { month: 6, activity: "Corrida Contínua" },
+        { month: 7, activity: "Giros e Agilidade" },
+        { month: 8, activity: "Treino com o Time" },
+        { month: 9, activity: "Jogo Competitivo" }
+      ];
+
+      const generalGuidelines = [
+        {
+          id: 'adm',
+          title: "Amplitude de Movimento",
+          icon: <Activity />,
+          items: [
+            "Manter o joelho esticado",
+            "Colocar almofada/toalha embaixo do tornozelo",
+            "Não colocá-las abaixo do joelho"
+          ]
+        },
+        {
+          id: 'pain',
+          title: "Redução da Dor e do Inchaço",
+          icon: <AlertCircle />,
+          items: [
+            "Manter pernas elevadas e gelo na região do joelho",
+            "4-5x/dia, por 30 minutos, descansando 1 hora",
+            "Importante durante a primeira semana",
+            "Caso tenha sensibilidade ao gelo, utilize uma toalha/pano"
+          ]
+        },
+        {
+          id: 'hygiene',
+          title: "Higiene",
+          icon: <CheckCircle />,
+          items: [
+            "Lavar a região após 72h, secar bem e fazer novos curativos",
+            "Não entrar com o joelho em piscina/banheira por 4 semanas"
+          ]
+        },
+        {
+          id: 'care',
+          title: "Cuidados",
+          icon: <Shield />,
+          items: [
+            "Evitar caminhar longas distâncias e sem o brace (quando necessário)",
+            "Usar muletas até ser liberado"
+          ]
+        }
+      ];
+
+      const dailyActivities = [
+        {
+          id: 'stairs',
+          title: "Subir e Descer Escadas",
+          icon: <TrendingUp />,
+          items: [
+            "Subir primeiro com a perna não operada, seguida pela muleta e perna operada no mesmo degrau",
+            "Descer primeiro com a perna operada e muleta, seguida pela perna não operada no mesmo degrau"
+          ]
+        },
+        {
+          id: 'crutches',
+          title: "Muletas - Dicas de Uso",
+          icon: <Info />,
+          items: [
+            "O apoio da mão deve ser no nível do quadril",
+            "Cotovelos dobrados cerca de 25°",
+            "O apoio axilar deve ficar 2-3 cm abaixo do ombro"
+          ]
+        },
+        {
+          id: 'two-crutches',
+          title: "Marcha com Duas Muletas",
+          icon: <Activity />,
+          items: [
+            "Avançar as duas muletas e a perna operada",
+            "Depois, avançar apenas a perna não operada",
+            "Repetir o processo"
+          ]
+        },
+        {
+          id: 'one-crutch',
+          title: "Marcha com Uma Muleta",
+          icon: <Activity />,
+          items: [
+            "Muleta ao lado da perna não operada",
+            "Avançar a perna operada e a muleta",
+            "Depois, avançar a perna não operada",
+            "Repetir o processo"
+          ]
+        }
+      ];
+
+      const milestones = [
+        {
+          id: 'driving',
+          title: "Dirigir",
+          icon: <Zap />,
+          criteria: [
+            "Quando puder acionar o freio com segurança",
+            "Entre 2-3 semanas no MIE (membro inferior esquerdo)",
+            "Entre 4-6 semanas no MID (membro inferior direito)"
+          ]
+        },
+        {
+          id: 'running',
+          title: "Correr",
+          icon: <Activity />,
+          criteria: [
+            "ADM completa",
+            "Sem derrame/edema",
+            "Simetria de quadríceps > 80%",
+            "Saltos unipodais sem dor",
+            "6/7 meses"
+          ]
+        },
+        {
+          id: 'sport',
+          title: "Retorno ao Esporte",
+          icon: <Award />,
+          criteria: [
+            "Função subjetiva normalizada (IKDC, ACL-RSI)",
+            "Simetria ≥ 90% de quadríceps e isquiotibiais",
+            "Simetria ≥ 90% de testes funcionais",
+            "8/9 meses"
+          ]
+        }
+      ];
+
+      const IntroScreen = () => (
+        <div className="flex flex-col items-center justify-center p-8 text-center animate-fadeIn">
+          <div className={`w-24 h-24 rounded-full ${theme.primary} flex items-center justify-center mb-6 shadow-lg text-white`}>
+            <Smile size={48} />
+          </div>
+          <h1 className="text-3xl font-bold text-teal-800 mb-2">Guia do Paciente LCA</h1>
+          <p className="text-teal-600 mb-8 max-w-md">
+            Seu companheiro de jornada para voltar a se mover com confiança e segurança.
+          </p>
+          
+          <div className="w-full max-w-md bg-white rounded-xl shadow-md p-6 mb-8 text-left border-l-4 border-teal-500">
+            <h3 className="font-bold text-teal-700 mb-4 flex items-center">
+              <CheckCircle size={20} className="mr-2" />
+              Por que seguir este guia?
+            </h3>
+            <ul className="space-y-3">
+              {benefits.map((benefit, idx) => (
+                <li key={idx} className="flex items-start text-sm text-gray-600">
+                  <span className="w-6 h-6 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mr-3 shrink-0 text-xs font-bold">
+                    {idx + 1}
+                  </span>
+                  <span className="mt-1">{benefit}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <button 
+            onClick={() => setShowIntro(false)}
+            className={`${theme.primary} ${theme.primaryHover} text-white px-8 py-3 rounded-full font-bold shadow-lg transform transition hover:scale-105 flex items-center`}
+          >
+            Começar minha recuperação <ChevronDown className="ml-2" />
+          </button>
+          
+          <div className="mt-12 text-sm text-gray-400">
+            <p className="font-semibold">Clínica PACE</p>
+            <p>Vitor da Mata Vaz - Fisioterapeuta</p>
+            <p>CREFITO-3/297100-F</p>
+          </div>
+        </div>
+      );
+
+      const PhaseCard = ({ phase, isActive, onClick }) => (
+        <div 
+          onClick={onClick}
+          className={`cursor-pointer transition-all duration-300 transform ${isActive ? 'scale-102 ring-2 ring-teal-400 shadow-lg z-10' : 'hover:bg-teal-50 hover:shadow-md'} 
+          bg-white rounded-xl p-5 border border-teal-100 relative overflow-hidden mb-4`}
+        >
+          <div className={`absolute top-0 left-0 w-2 h-full ${isActive ? theme.secondary : 'bg-gray-200'}`}></div>
+          
+          <div className="flex items-center justify-between pl-3">
+            <div className="flex items-center space-x-4">
+              <div className={`p-3 rounded-full ${isActive ? 'bg-teal-100 text-teal-600' : 'bg-gray-50 text-gray-400'}`}>
+                {phase.icon}
+              </div>
+              <div>
+                <h3 className={`font-bold text-lg ${isActive ? 'text-teal-800' : 'text-gray-600'}`}>{phase.title}</h3>
+                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide bg-gray-100 inline-block px-2 py-0.5 rounded-md mt-1">
+                  Semana: {phase.duration}
+                </p>
+              </div>
+            </div>
+            {isActive ? <ChevronUp className="text-teal-500" /> : <ChevronDown className="text-gray-300" />}
+          </div>
+          
+          {isActive && (
+            <div className="mt-6 pl-3 animate-slideDown">
+              <p className="text-gray-700 mb-6 text-sm bg-teal-50 p-3 rounded-lg border border-teal-100">
+                💡 <strong>Foco da fase:</strong> {phase.description}
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="text-sm font-bold text-teal-700 uppercase mb-3 flex items-center border-b border-teal-100 pb-2">
+                    <CheckCircle className="w-4 h-4 mr-2" /> Suas Metas
+                  </h4>
+                  <ul className="space-y-3">
+                    {phase.goals.map((goal, idx) => (
+                      <li key={idx} className="text-sm flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white p-2 rounded hover:bg-gray-50">
+                        <span className="font-semibold text-teal-800 text-xs uppercase mb-1 sm:mb-0">{goal.label}</span>
+                        <span className="text-gray-600 text-right text-sm">{goal.value}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-bold text-orange-600 uppercase mb-3 flex items-center border-b border-orange-100 pb-2">
+                    <Activity className="w-4 h-4 mr-2" /> O que fazer
+                  </h4>
+                  <ul className="space-y-2 bg-orange-50 p-3 rounded-lg">
+                    {phase.toDos.map((ex, idx) => (
+                      <li key={idx} className="text-sm text-gray-700 flex items-start">
+                        <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5 mr-2 shrink-0"></div>
+                        {ex}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+
+      const TimelineView = () => (
+        <div className="space-y-8 animate-fadeIn">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-teal-100">
+            <h2 className="text-xl font-bold text-teal-800 mb-2 flex items-center">
+              <BarChart2 className="mr-2" /> Linha do Tempo
+            </h2>
+            <p className="text-gray-500 text-sm mb-6">Uma estimativa de quando você poderá retomar atividades mais intensas.</p>
+            
+            <div className="relative pl-4 border-l-2 border-teal-100 space-y-8">
+              {returnTimeline.map((item, idx) => (
+                <div key={idx} className="relative">
+                  <div className="absolute -left-[21px] top-1 w-4 h-4 rounded-full bg-teal-500 border-2 border-white shadow-sm"></div>
+                  <div className="flex flex-col sm:flex-row sm:items-center">
+                    <span className="font-bold text-teal-700 w-24 mb-1 sm:mb-0">{item.month} Meses</span>
+                    <span className="text-gray-700 bg-teal-50 px-3 py-1 rounded-full text-sm font-medium">{item.activity}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-teal-900 to-teal-800 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
+            <div className="relative z-10">
+              <h3 className="font-bold text-lg mb-4 flex items-center">
+                <AlertCircle className="mr-2 text-teal-300" /> Cuidado com o Enxerto!
+              </h3>
+              <p className="text-teal-100 text-sm mb-4">
+                Usamos tendões flexores na sua cirurgia. Veja o que você pode fazer em cada etapa para proteger a cicatrização:
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {graftSpecifics.map((spec, idx) => (
+                  <div key={idx} className="bg-white/10 p-3 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div className="flex items-center text-teal-300 text-sm font-bold mb-1">
+                      {spec.icon} <span className="ml-2">{spec.time}</span>
+                    </div>
+                    <p className="text-xs text-white">{spec.action}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      const GuidelinesView = () => (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Orientações Gerais */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-teal-100">
+            <h2 className="text-xl font-bold text-teal-800 mb-4 flex items-center">
+              <Shield className="mr-2" /> Orientações Gerais
+            </h2>
+            <div className="space-y-4">
+              {generalGuidelines.map((guideline) => (
+                <div 
+                  key={guideline.id}
+                  onClick={() => setExpandedSection(expandedSection === guideline.id ? null : guideline.id)}
+                  className="cursor-pointer bg-teal-50 rounded-lg p-4 border border-teal-100 hover:bg-teal-100 transition"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-teal-200 rounded-lg mr-3 text-teal-700">
+                        {guideline.icon}
+                      </div>
+                      <h3 className="font-bold text-teal-800">{guideline.title}</h3>
+                    </div>
+                    {expandedSection === guideline.id ? <ChevronUp className="text-teal-600" /> : <ChevronDown className="text-teal-400" />}
+                  </div>
+                  {expandedSection === guideline.id && (
+                    <ul className="mt-4 pl-12 space-y-2">
+                      {guideline.items.map((item, idx) => (
+                        <li key={idx} className="text-sm text-gray-700 flex items-start">
+                          <span className="w-1.5 h-1.5 bg-teal-400 rounded-full mt-1.5 mr-2 shrink-0"></span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Atividades de Vida Diária */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-teal-100">
+            <h2 className="text-xl font-bold text-teal-800 mb-4 flex items-center">
+              <Activity className="mr-2" /> Atividades de Vida Diária
+            </h2>
+            <div className="space-y-4">
+              {dailyActivities.map((activity) => (
+                <div 
+                  key={activity.id}
+                  onClick={() => setExpandedSection(expandedSection === activity.id ? null : activity.id)}
+                  className="cursor-pointer bg-orange-50 rounded-lg p-4 border border-orange-100 hover:bg-orange-100 transition"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-orange-200 rounded-lg mr-3 text-orange-700">
+                        {activity.icon}
+                      </div>
+                      <h3 className="font-bold text-orange-800">{activity.title}</h3>
+                    </div>
+                    {expandedSection === activity.id ? <ChevronUp className="text-orange-600" /> : <ChevronDown className="text-orange-400" />}
+                  </div>
+                  {expandedSection === activity.id && (
+                    <ul className="mt-4 pl-12 space-y-2">
+                      {activity.items.map((item, idx) => (
+                        <li key={idx} className="text-sm text-gray-700 flex items-start">
+                          <span className="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5 mr-2 shrink-0"></span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Marcos Após Cirurgias */}
+          <div className="bg-gradient-to-br from-teal-900 to-teal-800 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
+            <div className="relative z-10">
+              <h2 className="text-xl font-bold mb-4 flex items-center">
+                <Award className="mr-2 text-teal-300" /> Marcos Após Cirurgias no Joelho
+              </h2>
+              <div className="space-y-4">
+                {milestones.map((milestone) => (
+                  <div 
+                    key={milestone.id}
+                    onClick={() => setExpandedSection(expandedSection === milestone.id ? null : milestone.id)}
+                    className="cursor-pointer bg-white/10 rounded-lg p-4 border border-white/20 hover:bg-white/20 transition backdrop-blur-sm"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="p-2 bg-white/20 rounded-lg mr-3">
+                          {milestone.icon}
+                        </div>
+                        <h3 className="font-bold text-white">{milestone.title}</h3>
+                      </div>
+                      {expandedSection === milestone.id ? <ChevronUp className="text-teal-300" /> : <ChevronDown className="text-teal-400" />}
+                    </div>
+                    {expandedSection === milestone.id && (
+                      <ul className="mt-4 pl-12 space-y-2">
+                        {milestone.criteria.map((criterion, idx) => (
+                          <li key={idx} className="text-sm text-teal-100 flex items-start">
+                            <span className="w-1.5 h-1.5 bg-teal-300 rounded-full mt-1.5 mr-2 shrink-0"></span>
+                            {criterion}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans text-gray-800 selection:bg-teal-200">
+          {showIntro ? (
+            <IntroScreen />
+          ) : (
+            <div className="max-w-3xl mx-auto pb-20">
+              <header className="bg-white sticky top-0 z-30 px-6 py-4 shadow-sm border-b border-gray-100 flex justify-between items-center">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-sm">
+                    <Smile size={24} />
+                  </div>
+                  <div>
+                    <h1 className="font-bold text-gray-800 text-sm leading-tight">Clínica PACE</h1>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Guia do Paciente</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowIntro(true)}
+                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition"
+                  title="Sobre este guia"
+                >
+                  <Info size={20} />
+                </button>
+              </header>
+
+              <div className="flex p-4 space-x-2 sticky top-[73px] z-20 bg-gray-50/95 backdrop-blur-sm">
+                <button 
+                  onClick={() => setActiveTab('phases')}
+                  className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all shadow-sm ${activeTab === 'phases' ? 'bg-teal-600 text-white shadow-md transform scale-105' : 'bg-white text-gray-500 border border-gray-200'}`}
+                >
+                  Minhas Fases
+                </button>
+                <button 
+                  onClick={() => setActiveTab('timeline')}
+                  className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all shadow-sm ${activeTab === 'timeline' ? 'bg-teal-600 text-white shadow-md transform scale-105' : 'bg-white text-gray-500 border border-gray-200'}`}
+                >
+                  Previsão
+                </button>
+                <button 
+                  onClick={() => setActiveTab('guidelines')}
+                  className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all shadow-sm ${activeTab === 'guidelines' ? 'bg-teal-600 text-white shadow-md transform scale-105' : 'bg-white text-gray-500 border border-gray-200'}`}
+                >
+                  Orientações
+                </button>
+              </div>
+
+              <main className="px-4">
+                {activeTab === 'phases' ? (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div className="flex items-center justify-between mb-2 px-1">
+                      <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Passo a Passo</p>
+                      <span className="text-[10px] text-teal-600 bg-teal-50 px-2 py-1 rounded-full font-medium">Toque para expandir</span>
+                    </div>
+                    {phases.map((phase) => (
+                      <PhaseCard 
+                        key={phase.id} 
+                        phase={phase} 
+                        isActive={selectedPhase === phase.id} 
+                        onClick={() => setSelectedPhase(selectedPhase === phase.id ? null : phase.id)} 
+                      />
+                    ))}
+                  </div>
+                ) : activeTab === 'timeline' ? (
+                  <TimelineView />
+                ) : (
+                  <GuidelinesView />
+                )}
+              </main>
+              
+              <footer className="mt-12 text-center text-gray-400 text-xs pb-10">
+                <div className="w-12 h-1 bg-teal-100 mx-auto rounded-full mb-4"></div>
+                <p className="font-bold text-teal-800 text-sm">Vitor da Mata Vaz</p>
+                <p>Fisioterapeuta - CREFITO-3/297100-F</p>
+                <p className="mt-4 max-w-xs mx-auto text-[10px] leading-relaxed opacity-70">
+                  *Este guia é um auxílio e não substitui suas consultas. Sempre siga a orientação direta do seu fisioterapeuta.
+                </p>
+              </footer>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<RLCAPatientGuide />);
+  </script>
+</body>
+</html>
